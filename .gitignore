@@ -1,0 +1,29 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Agent / editor tooling — keep out of the public repo
+.kiro/
+.agent/
+.cursor/
+
+# Python
+.venv*
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+*.log
+
+# Build / deploy artifacts
+artifacts/
+cache/
+.vercel/
+
+# OS
+.DS_Store
