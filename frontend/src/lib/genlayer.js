@@ -52,17 +52,50 @@ export function writeClient(account, provider) {
   return createClient({ chain: testnetBradbury, account, provider });
 }
 
+const BRADBURY_CHAIN_HEX = "0x" + (4221).toString(16); // 0x107d
+
+// Switch (or add) the Bradbury chain in the wallet without touching MetaMask Snaps.
+// genlayer-js's connect() probes wallet_getSnaps, which throws on wallets that do not
+// implement Snaps. Signing never uses the snap, so we only need the chain switch.
+async function ensureBradbury(provider) {
+  let current = null;
+  try {
+    current = await provider.request({ method: "eth_chainId" });
+  } catch {
+    current = null;
+  }
+  if (current === BRADBURY_CHAIN_HEX) return;
+  try {
+    await provider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: BRADBURY_CHAIN_HEX }],
+    });
+  } catch (e) {
+    const notAdded = e?.code === 4902 || /unrecognized chain|not been added|add.*chain/i.test(e?.message || "");
+    if (!notAdded) throw e;
+    await provider.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: BRADBURY_CHAIN_HEX,
+        chainName: "GenLayer Bradbury",
+        rpcUrls: ["https://rpc-bradbury.genlayer.com"],
+        nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 },
+        blockExplorerUrls: ["https://explorer-bradbury.genlayer.com"],
+      }],
+    });
+  }
+}
+
 export async function connectWallet() {
   const provider = window.ethereum;
   if (!provider) {
-    throw new Error("No EVM wallet found. Install MetaMask to submit transactions.");
+    throw new Error("No EVM wallet found. Install a browser wallet like MetaMask to submit transactions.");
   }
   const accounts = await provider.request({ method: "eth_requestAccounts" });
   const account = accounts?.[0];
   if (!account) throw new Error("Wallet returned no account.");
+  await ensureBradbury(provider);
   const client = writeClient(account, provider);
-  // Switch/add the GenLayer Bradbury chain in the wallet before writing.
-  await client.connect(NETWORK_KEY);
   return { account, client };
 }
 
