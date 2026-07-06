@@ -1,0 +1,22 @@
+# GenLayer test / deploy network configuration.
+# Private keys are read from the environment (.env) and never stored here.
+networks:
+  default: testnet_bradbury
+
+  localnet:
+    url: "http://127.0.0.1:4000/api"
+    leader_only: false
+
+  studionet: {}
+
+  testnet_bradbury:
+    url: "https://rpc-bradbury.genlayer.com/api"
+    accounts:
+      - "${ACCOUNT_PRIVATE_KEY}"
+    from: "${ACCOUNT_PRIVATE_KEY}"
+
+paths:
+  contracts: "contracts"
+  artifacts: "artifacts"
+
+environment: .env
