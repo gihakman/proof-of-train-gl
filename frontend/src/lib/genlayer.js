@@ -15,9 +15,36 @@ const DEFAULT_CONTRACT_ADDRESS = "0xFe8299f2b66DA5d2A65587D52F2AeE2D740d4aEF";
 export const CONTRACT_ADDRESS =
   import.meta.env.VITE_CONTRACT_ADDRESS || DEFAULT_CONTRACT_ADDRESS;
 
-// Read-only client. No wallet required.
+// Read-only client. No wallet required. Reused across reads to avoid overhead.
+let _readClient = null;
 export function readClient() {
-  return createClient({ chain: testnetBradbury });
+  if (!_readClient) _readClient = createClient({ chain: testnetBradbury });
+  return _readClient;
+}
+
+// The Bradbury RPC rate-limits gen_call (~2 req/s per IP). Retry reads with backoff so
+// a burst on page load degrades gracefully instead of erroring.
+function isRateLimit(e) {
+  const msg = (e?.details || e?.shortMessage || e?.message || "").toLowerCase();
+  return (
+    msg.includes("rate limit") ||
+    msg.includes("exceeds defined limit") ||
+    e?.code === -32005 ||
+    e?.code === 429
+  );
+}
+
+async function withRetry(fn, tries = 5) {
+  let delay = 700;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!isRateLimit(e) || i === tries - 1) throw e;
+      await new Promise((r) => setTimeout(r, delay + Math.random() * 300));
+      delay *= 1.8;
+    }
+  }
 }
 
 // Write client bound to a connected wallet account + provider.
@@ -42,8 +69,7 @@ export async function connectWallet() {
 // ---- reads ----------------------------------------------------------------------
 
 export async function readContract(address, functionName, args = []) {
-  const client = readClient();
-  return client.readContract({ address, functionName, args });
+  return withRetry(() => readClient().readContract({ address, functionName, args }));
 }
 
 export async function getProtocolInfo(address) {

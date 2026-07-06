@@ -13,6 +13,9 @@ export function LatestAdjudications() {
   useEffect(() => {
     let alive = true;
     (async () => {
+      // Small stagger so this read does not collide with the console's reads on load
+      // (the RPC rate-limits gen_call per IP).
+      await new Promise((r) => setTimeout(r, 1300));
       try {
         const jobs = await getJobs(CONTRACT_ADDRESS, 0, 100);
         const settled = (jobs || [])

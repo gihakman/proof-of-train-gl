@@ -190,11 +190,12 @@ export function Console() {
   const refresh = useCallback(async () => {
     if (!address) return;
     try {
-      const [i, j] = await Promise.all([getProtocolInfo(address), getJobs(address, 0, 100)]);
+      const i = await getProtocolInfo(address);
       setInfo(i);
+      const j = await getJobs(address, 0, 100);
       setJobs((j || []).slice().reverse());
     } catch (e) {
-      setMsg({ type: "err", text: `Could not read contract at ${truncate(address)}: ${e.message}` });
+      setMsg({ type: "err", text: `Could not read contract at ${truncate(address)}: ${e.shortMessage || e.message}` });
     }
   }, [address]);
 
