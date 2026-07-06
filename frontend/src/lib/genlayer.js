@@ -99,6 +99,17 @@ export async function connectWallet() {
   return { account, client };
 }
 
+// Forget the connection in the app and, where supported (MetaMask), revoke the
+// eth_accounts permission so the wallet no longer treats the site as connected.
+export async function disconnectWallet() {
+  const provider = window.ethereum;
+  try {
+    await provider?.request?.({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] });
+  } catch {
+    // Not all wallets support programmatic revoke; clearing app state is enough.
+  }
+}
+
 // ---- reads ----------------------------------------------------------------------
 
 export async function readContract(address, functionName, args = []) {

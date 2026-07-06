@@ -3,6 +3,7 @@ import {
   CONTRACT_ADDRESS,
   EXPLORER_TX,
   connectWallet,
+  disconnectWallet,
   getProtocolInfo,
   getJobs,
   createJob,
@@ -201,6 +202,21 @@ export function Console() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
+  useEffect(() => {
+    const p = window.ethereum;
+    if (!p?.on) return undefined;
+    const handler = (accts) => {
+      setWallet(null);
+      setTx(null);
+      setMsg({
+        type: "",
+        text: !accts || accts.length === 0 ? "Wallet disconnected." : "Account changed. Reconnect to continue.",
+      });
+    };
+    p.on("accountsChanged", handler);
+    return () => p.removeListener?.("accountsChanged", handler);
+  }, []);
+
   async function onConnect() {
     setMsg(null);
     try {
@@ -210,6 +226,13 @@ export function Console() {
     } catch (e) {
       setMsg({ type: "err", text: e.message });
     }
+  }
+
+  async function onDisconnect() {
+    await disconnectWallet();
+    setWallet(null);
+    setTx(null);
+    setMsg({ type: "ok", text: "Wallet disconnected." });
   }
 
   async function onAction(kind, payload) {
@@ -265,9 +288,14 @@ export function Console() {
           <div className="console-head">
             <div className="wallet">
               <span className={`dot ${wallet ? "" : "off"}`} />
-              {wallet
-                ? <span className="addr">{truncate(wallet.account)}</span>
-                : <button className="btn btn-signal btn-sm" onClick={onConnect}>connect wallet</button>}
+              {wallet ? (
+                <>
+                  <span className="addr">{truncate(wallet.account)}</span>
+                  <button className="btn btn-sm" onClick={onDisconnect}>disconnect</button>
+                </>
+              ) : (
+                <button className="btn btn-signal btn-sm" onClick={onConnect}>connect wallet</button>
+              )}
               {info && <span className="addr">fee {info.fee_bps / 100}%</span>}
               {info && <span className="addr">{info.job_count} jobs</span>}
             </div>
