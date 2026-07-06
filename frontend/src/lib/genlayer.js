@@ -63,7 +63,7 @@ export async function getProviderReputation(address, provider) {
 // Explicit gas limit for writes. Value-bearing GenLayer transactions (escrow) do extra
 // work in the consensus contract, and the auto-estimate can be too low, causing an inner
 // call to run out of gas. Unused gas is refunded, so a generous cap is safe.
-const WRITE_GAS = 6_000_000n;
+const WRITE_GAS = 8_000_000n;
 
 export const EXPLORER_TX = "https://explorer-bradbury.genlayer.com/tx/";
 
