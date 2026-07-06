@@ -1,0 +1,40 @@
+:root {
+  /* Color — dark instrument screen */
+  --bg: #0a0e13;
+  --surface: #111823;
+  --surface-2: #161f2c;
+  --grid: #1b2735;
+  --border: #243244;
+  --text: #e7eef6;
+  --muted: #8a99ab;
+  --dim: #556373;
+  --signal: #25e88a;
+  --signal-glow: #123b2c;
+  --amber: #f5b23d;
+  --danger: #ff5d6c;
+  --cyan: #5ec8d8;
+
+  /* Type */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Spacing (4px grid) */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s6: 24px;
+  --s8: 32px;
+  --s12: 48px;
+  --s16: 64px;
+
+  /* Radius — sharp, engineered */
+  --r-chip: 2px;
+  --r: 4px;
+  --r-lg: 6px;
+
+  --border-1: 1px solid var(--border);
+  --grid-1: 1px solid var(--grid);
+  --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+}
