@@ -60,8 +60,13 @@ export async function getProviderReputation(address, provider) {
 
 // ---- writes ---------------------------------------------------------------------
 
+// Explicit gas limit for writes. Value-bearing GenLayer transactions (escrow) do extra
+// work in the consensus contract, and the auto-estimate can be too low, causing an inner
+// call to run out of gas. Unused gas is refunded, so a generous cap is safe.
+const WRITE_GAS = 6_000_000n;
+
 async function send(client, address, functionName, args, value = 0n) {
-  const hash = await client.writeContract({ address, functionName, args, value });
+  const hash = await client.writeContract({ address, functionName, args, value, gas: WRITE_GAS });
   await client.waitForTransactionReceipt({ hash, status: TransactionStatus.ACCEPTED });
   return hash;
 }
