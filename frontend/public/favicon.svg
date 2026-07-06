@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ProofOfTrain">
+  <rect width="32" height="32" rx="7" fill="#0A0E13"/>
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6.25" fill="none" stroke="#243244" stroke-width="1.5"/>
+  <path d="M6 7 L6 25 L26 25" fill="none" stroke="#2E3E52" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M6 9 C10 10.5, 11 21, 15.5 23 C20 25, 22 25.1, 25.8 25.2" fill="none" stroke="#25E88A" stroke-width="2.3" stroke-linecap="round"/>
+  <circle cx="25.8" cy="25.2" r="2.2" fill="#25E88A"/>
+</svg>
