@@ -1,5 +1,6 @@
 import { LossCurveMark, LossCurvePlot } from "./components/LossCurveMark.jsx";
 import { Console } from "./components/Console.jsx";
+import { LatestAdjudications } from "./components/LatestAdjudications.jsx";
 import { CONTRACT_ADDRESS } from "./lib/genlayer.js";
 import { truncate } from "./lib/format.js";
 
@@ -23,6 +24,7 @@ function TopBar() {
         </div>
         <nav className="nav">
           <a href="#overview">Overview</a>
+          <a href="#latest">Latest</a>
           <a href="#how">How it works</a>
           <a href="#console">Console</a>
           <a href="#developers">Developers</a>
@@ -296,6 +298,7 @@ export default function App() {
     <>
       <TopBar />
       <Hero />
+      <LatestAdjudications />
       <Problem />
       <HowItWorks />
       <Console />
