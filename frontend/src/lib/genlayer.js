@@ -65,13 +65,16 @@ export async function getProviderReputation(address, provider) {
 // call to run out of gas. Unused gas is refunded, so a generous cap is safe.
 const WRITE_GAS = 6_000_000n;
 
-async function send(client, address, functionName, args, value = 0n) {
+export const EXPLORER_TX = "https://explorer-bradbury.genlayer.com/tx/";
+
+async function send(client, address, functionName, args, value = 0n, onHash) {
   const hash = await client.writeContract({ address, functionName, args, value, gas: WRITE_GAS });
+  if (onHash) onHash(hash);
   await client.waitForTransactionReceipt({ hash, status: TransactionStatus.ACCEPTED });
   return hash;
 }
 
-export async function createJob(client, address, params, valueAtto) {
+export async function createJob(client, address, params, valueAtto, onHash) {
   const { provider, modelArch, datasetHash, baseModelHash, targetEpochs, learningRate } = params;
   return send(
     client,
@@ -79,13 +82,14 @@ export async function createJob(client, address, params, valueAtto) {
     "create_job",
     [provider, modelArch, datasetHash, baseModelHash, Number(targetEpochs), learningRate],
     BigInt(valueAtto),
+    onHash,
   );
 }
 
-export async function submitEvidence(client, address, jobId, logUrl, finalModelHash) {
-  return send(client, address, "submit_evidence", [Number(jobId), logUrl, finalModelHash]);
+export async function submitEvidence(client, address, jobId, logUrl, finalModelHash, onHash) {
+  return send(client, address, "submit_evidence", [Number(jobId), logUrl, finalModelHash], 0n, onHash);
 }
 
-export async function adjudicate(client, address, jobId) {
-  return send(client, address, "adjudicate", [Number(jobId)]);
+export async function adjudicate(client, address, jobId, onHash) {
+  return send(client, address, "adjudicate", [Number(jobId)], 0n, onHash);
 }

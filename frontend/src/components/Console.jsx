@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   CONTRACT_ADDRESS,
+  EXPLORER_TX,
   connectWallet,
   getProtocolInfo,
   getJobs,
@@ -9,6 +10,29 @@ import {
   adjudicate,
 } from "../lib/genlayer.js";
 import { truncate, formatGen, genToAtto, VERDICT } from "../lib/format.js";
+
+function TxBanner({ tx, onDismiss }) {
+  if (!tx) return null;
+  const cls = tx.phase === "err" ? "err" : tx.phase === "ok" ? "ok" : "";
+  return (
+    <div className={`notice txbanner ${cls}`}>
+      <div className="tx-row">
+        {tx.phase === "pending" ? <span className="spinner" /> : <span className={`tx-dot ${cls}`} />}
+        <span>{tx.label}</span>
+      </div>
+      <div className="tx-meta">
+        {tx.hash && (
+          <a className="mono" href={`${EXPLORER_TX}${tx.hash}`} target="_blank" rel="noreferrer">
+            {truncate(tx.hash, 10, 8)} on explorer ↗
+          </a>
+        )}
+        {tx.phase !== "pending" && (
+          <button className="tx-x" onClick={onDismiss} aria-label="dismiss">dismiss</button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function Verdict({ status }) {
   const v = VERDICT[status] || { label: status, cls: "review" };
@@ -161,6 +185,7 @@ export function Console() {
   const [tab, setTab] = useState("jobs");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [tx, setTx] = useState(null);
 
   const refresh = useCallback(async () => {
     if (!address) return;
@@ -189,21 +214,34 @@ export function Console() {
   async function onAction(kind, payload) {
     if (!wallet) { setMsg({ type: "err", text: "Connect a wallet first." }); return; }
     if (!address) { setMsg({ type: "err", text: "Set the contract address first." }); return; }
+    const verb =
+      kind === "create" ? "Creating job and locking escrow"
+      : kind === "submit" ? "Submitting evidence"
+      : "Running adjudication";
     setBusy(true);
-    setMsg({ type: "", text: "Submitting transaction. Waiting for consensus…" });
+    setMsg(null);
+    setTx({ phase: "pending", label: `${verb}: confirm in your wallet…`, hash: null });
+    const onHash = (h) =>
+      setTx({ phase: "pending", label: `${verb}: submitted, waiting for consensus…`, hash: h });
     try {
-      const { client, account } = wallet;
+      const { client } = wallet;
       if (kind === "create") {
-        await createJob(client, address, payload.params, payload.valueAtto);
+        await createJob(client, address, payload.params, payload.valueAtto, onHash);
       } else if (kind === "submit") {
-        await submitEvidence(client, address, payload.jobId, payload.logUrl, payload.finalModelHash);
+        await submitEvidence(client, address, payload.jobId, payload.logUrl, payload.finalModelHash, onHash);
       } else if (kind === "adjudicate") {
-        await adjudicate(client, address, payload.jobId);
+        await adjudicate(client, address, payload.jobId, onHash);
       }
-      setMsg({ type: "ok", text: "Transaction accepted. Refreshing state…" });
+      setTx((t) => ({ phase: "pending", label: "Accepted by consensus. Refreshing state…", hash: t?.hash || null }));
       await refresh();
+      const done =
+        kind === "create" ? "Job created and escrow locked."
+        : kind === "submit" ? "Evidence submitted."
+        : "Adjudication settled. See the verdict below.";
+      setTx((t) => ({ phase: "ok", label: done, hash: t?.hash || null }));
     } catch (e) {
-      setMsg({ type: "err", text: e.message || String(e) });
+      const text = e?.shortMessage || e?.message || String(e);
+      setTx((t) => ({ phase: "err", label: `Failed: ${text}`, hash: t?.hash || null }));
     } finally {
       setBusy(false);
     }
@@ -242,6 +280,9 @@ export function Console() {
           </div>
 
           {msg && <div className={`notice ${msg.type}`} style={{ marginTop: "var(--s4)" }}>{msg.text}</div>}
+          <div style={{ marginTop: "var(--s4)" }}>
+            <TxBanner tx={tx} onDismiss={() => setTx(null)} />
+          </div>
 
           {!address && (
             <div className="empty">

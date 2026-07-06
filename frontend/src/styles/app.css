@@ -152,6 +152,23 @@ section { padding: var(--s16) 0; border-bottom: var(--grid-1); scroll-margin-top
 .notice.err { border-left-color: var(--danger); color: var(--danger); }
 .notice.ok { border-left-color: var(--signal); }
 
+/* transaction status banner */
+.txbanner { display: flex; align-items: center; justify-content: space-between; gap: var(--s4); flex-wrap: wrap; }
+.tx-row { display: flex; align-items: center; gap: var(--s3); }
+.tx-meta { display: flex; align-items: center; gap: var(--s4); }
+.tx-meta a { font-size: 0.78rem; }
+.tx-x { background: none; border: none; color: var(--dim); font-size: 0.78rem; padding: 0; text-decoration: underline; cursor: pointer; }
+.tx-x:hover { color: var(--muted); }
+.tx-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.tx-dot.ok { background: var(--signal); box-shadow: 0 0 8px var(--signal); }
+.tx-dot.err { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.spinner {
+  width: 13px; height: 13px; flex: none; border-radius: 50%;
+  border: 2px solid var(--grid); border-top-color: var(--signal);
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .tabs { display: flex; gap: var(--s1); margin: var(--s6) 0 var(--s4); border-bottom: var(--grid-1); }
 .tab { background: none; border: none; color: var(--muted); padding: 8px 14px; font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .tab.active { color: var(--text); border-bottom-color: var(--signal); }
