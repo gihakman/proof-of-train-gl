@@ -3,11 +3,6 @@
 .env.*
 !.env.example
 
-# Agent / editor tooling — keep out of the public repo
-.kiro/
-.agent/
-.cursor/
-
 # Python
 .venv*
 __pycache__/
