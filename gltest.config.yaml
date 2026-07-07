@@ -19,4 +19,4 @@ paths:
   contracts: "contracts"
   artifacts: "artifacts"
 
-environment: .env
+environment: .env 
